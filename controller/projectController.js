@@ -3,6 +3,15 @@ import ErrorHandler from "../middlewares/error.js";
 import { Project } from "../models/projectSchema.js";
 import { v2 as cloudinary } from "cloudinary";
 
+const parseJson = (value, fallback = []) => {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
 export const addNewProject = catchAsyncErrors(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return next(new ErrorHandler("Project Banner image Required!", 404));
@@ -11,11 +20,14 @@ export const addNewProject = catchAsyncErrors(async (req, res, next) => {
   const { 
     title,
     description,
+    challengeAndSolution,
     gitRepoLink,
     projectLink,
     technologies,
     stack,
-    deployed, } = req.body;
+    deployed,
+    features,
+    impactStats } = req.body;
   if (
     !title ||
     !description ||
@@ -45,6 +57,9 @@ export const addNewProject = catchAsyncErrors(async (req, res, next) => {
     technologies,
     stack,
     deployed,
+    challengeAndSolution,
+    features: parseJson(features),
+    impactStats: parseJson(impactStats),
     projectBanner: {
       public_id: cloudinaryResponse.public_id, // Set your cloudinary public_id here
       url: cloudinaryResponse.secure_url, // Set your cloudinary secure_url here
@@ -73,11 +88,14 @@ export const updateProject = catchAsyncErrors(async (req, res, next) => {
     const newProjectData = {
         title: req.body.title,
         description: req.body.description,
+        challengeAndSolution: req.body.challengeAndSolution,
         gitRepoLink: req.body.gitRepoLink,
         projectLink: req.body.projectLink,
         technologies: req.body.technologies,
         stack: req.body.stack,
         deployed: req.body.deployed,
+        features: parseJson(req.body.features),
+        impactStats: parseJson(req.body.impactStats),
     };
     if(req.files && req.files.projectBanner) {
         const projectBanner = req.files.projectBanner;
